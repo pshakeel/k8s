@@ -1,0 +1,40 @@
+kops_aws setup on ubuntu_t2.medium
+
+sudo -i
+
+Download the AWC CLI installation files using following command
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+Unzip the downloaded files
+
+apt install awscli
+
+aws configure
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+wget https://github.com/kubernetes/kops/releases/download/v1.25.0/kops-linux-amd64
+chmod +x kops-linux-amd64 kubectl
+mv kubectl /usr/local/bin/kubectl
+mv kops-linux-amd64 /usr/local/bin/kops
+
+following commands are use for clreate resourses or cluster on aws by k8s
+
+aws s3api create-bucket --bucket shakeelshaikh.k8s.local --region us-east-1
+aws s3api put-bucket-versioning --bucket shakeelshaikh.k8s.local --region us-east-1 --versioning-configuration Status=Enabled
+export KOPS_STATE_STORE=s3://shakeelshaikh.k8s.local
+
+kops create cluster --name shakeel.k8s.local --zones us-east-1a --master-count=1 --master-size t2.medium --node-count=2 --node-size t2.micro
+kops update cluster --name shakeel.k8s.local --yes --admin
+
+kubectl get no
+kops get cluster
+
+CLUSTER ADMIN ACTIVITIES:
+
+SCALING THE NODES:
+kops edit ig --name=shakeel.k8s.local nodes-us-east-1a
+kops edit ig --name=shakeel.k8s.local nodes-us-east-1a (MIN AND MX REPLACE WITH 4)
+kops update cluster --name shakeel.k8s.local --yes --admin
+kops rolling-update cluster
+
+To delete cluster: kops delete cluster --name shakeel.k8s.local --yes
+Note: bucket will not delete 
